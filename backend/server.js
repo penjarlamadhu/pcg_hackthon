@@ -12,7 +12,7 @@ const axios = require('axios');
 // --------------------------------------------------
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key';
 
 // --------------------------------------------------
@@ -235,6 +235,36 @@ app.get('/api/buyers', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch buyers' });
     }
 });
+// Update buyer
+app.put('/api/buyers/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, budget, location, property_type, contact } = req.body;
+
+        if (!name || !budget || !location || !property_type || !contact) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const updatedBuyer = await database.updateBuyer(id, {
+            name,
+            budget,
+            location,
+            property_type,
+            contact
+        });
+
+        if (updatedBuyer.updated === 0) {
+            return res.status(404).json({ error: 'Buyer not found' });
+        }
+
+        res.json({ success: true, buyer: updatedBuyer });
+
+    } catch (err) {
+        console.error('Error updating buyer:', err);
+        res.status(500).json({ error: 'Failed to update buyer' });
+    }
+});
+
 
 app.post('/api/buyers', async (req, res) => {
     try {
